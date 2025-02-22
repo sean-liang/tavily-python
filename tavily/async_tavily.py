@@ -14,13 +14,16 @@ class AsyncTavilyClient:
     Async Tavily API client class.
     """
 
-    def __init__(self, api_key: Optional[str] = None,
+    def __init__(self, api_key: Optional[str] = None,  http_proxy: Optional[str] = None, 
                  company_info_tags: Sequence[str] = ("news", "general", "finance")):
         if api_key is None:
             api_key = os.getenv("TAVILY_API_KEY")
 
         if not api_key:
             raise MissingAPIKeyError()
+
+        if not http_proxy:
+            http_proxy = os.getenv("TAVILY_HTTP_PROXY")
 
         self._client_creator = lambda: httpx.AsyncClient(
             headers={
@@ -29,6 +32,7 @@ class AsyncTavilyClient:
             },
             base_url="https://api.tavily.com",
             timeout=180,
+            proxy=http_proxy
         )
         self._company_info_tags = company_info_tags
 

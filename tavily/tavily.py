@@ -13,12 +13,19 @@ class TavilyClient:
     Tavily API client class.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, http_proxy: Optional[str] = None):
         if api_key is None:
             api_key = os.getenv("TAVILY_API_KEY")
-
+            
         if not api_key:
             raise MissingAPIKeyError()
+        
+        self.proxies = None
+        if not http_proxy:
+            http_proxy = os.getenv("TAVILY_HTTP_PROXY")
+        if http_proxy:
+            self.proxies = {"http": http_proxy, "https": http_proxy}
+        
         self.base_url = "https://api.tavily.com"
         self.api_key = api_key
         self.headers = {
@@ -59,7 +66,7 @@ class TavilyClient:
         if kwargs:
             data.update(kwargs)
 
-        response = requests.post(self.base_url + "/search", data=json.dumps(data), headers=self.headers, timeout=100)
+        response = requests.post(self.base_url + "/search", data=json.dumps(data), headers=self.headers, timeout=100, proxies=self.proxies)
 
         if response.status_code == 200:
             return response.json()
@@ -125,7 +132,7 @@ class TavilyClient:
         if kwargs:
             data.update(kwargs)
 
-        response = requests.post(self.base_url + "/extract", data=json.dumps(data), headers=self.headers, timeout=100)
+        response = requests.post(self.base_url + "/extract", data=json.dumps(data), headers=self.headers, timeout=100, proxies=self.proxies)
 
         if response.status_code == 200:
             return response.json()
